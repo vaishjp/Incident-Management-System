@@ -102,7 +102,7 @@ The IMS system is built as a distributed, asynchronous, event-driven architectur
     *   **Buffered channels** (queue).
     *   **Non-blocking** request handling.
 *   Returns `202 Accepted` immediately.
-*   ** Key Feature:** Prevents API slowdown due to database latency.
+*   **Key Feature:** Prevents API slowdown due to database latency.
 
 ###  5.2 Backpressure Mechanism
 To prevent system crashes:
@@ -164,9 +164,9 @@ Built using **React**.
 ### Non-Functional Features
 *   Rate limiting
 *   Backpressure handling
-*   Fault tolerance
+*   Basic fault tolerance via async processing and backpressure
 *   Data consistency (PostgreSQL transactions)
-*   Scalability (dynamic worker pool)
+*   Scalability via concurrent worker pool
 *   Observability (`/health` + logs)
 
 ---
@@ -210,6 +210,26 @@ MTTR = RCA Submission Time - First Signal Time
     *   **Solution:** Clean container reset + proper `.env` configuration.
 
 ---
+## 🔌 Key API Endpoints
+
+GET /incidents  
+→ Fetch all active incidents  
+
+POST /incidents/{id}/acknowledge  
+→ Move incident to INVESTIGATING  
+
+POST /rca  
+→ Submit RCA and resolve incident  
+
+POST /incidents/{id}/close  
+→ Close incident  
+
+GET /incidents/{id}/signals  
+→ Fetch raw signals from MongoDB  
+
+GET /health  
+→ System health check
+---
 
 ##  10. Future Enhancements
 *   Real-time WebSocket updates for the dashboard.
@@ -244,15 +264,47 @@ MTTR = RCA Submission Time - First Signal Time
 | **API**                    | REST                   |
 
 ---
+## 13. How to Run
 
-##  13. Repository Structure
+### Prerequisites
+- Docker & Docker Compose installed
+- Go installed (optional for local run)
+- Node.js (for frontend)
+
+### Step 1: Start services
+docker-compose up -d
+
+### Step 2: Run backend
+cd backend
+go run .
+
+### Step 3: Run frontend
+cd frontend
+npm install
+npm run dev
+
+### Step 4: Access application
+Frontend: http://localhost:5173  
+Backend: http://localhost:3000
+
+##  14. Repository Structure
 ```text
 Incident-Management-System/
  ├── backend/
  ├── frontend/
  ├── docker-compose.yml
- ├── PROOF_OF_WORK
+ ├── PROOF_OF_WORK_IMS
  └── README.md
 ```
-##  14. Conclusion
+##  Demo / Proof of Work
+
+Screenshots demonstrating:
+- Incident dashboard
+- RCA workflow
+- Raw signal logs
+
+Located in: /PROOF_OF_WORK_IMS
+
+
+##  15. Conclusion
 This project successfully demonstrates the design and implementation of a resilient, scalable Incident Management System. It incorporates real-world SRE practices, distributed system design principles, fault tolerance, and observability. The system is capable of handling high-volume signals while maintaining performance, reliability, and usability.
