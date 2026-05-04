@@ -18,7 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/bson" // 👉 Added for Fix 29 (Mongo querying)
+	"go.mongodb.org/mongo-driver/bson" //  Added for Fix 29 (Mongo querying)
 )
 
 // ==========================================
@@ -28,16 +28,16 @@ import (
 // ARCHITECTURE FEATURE: Asynchronous Ingestion
 var signalQueue = make(chan Signal, 100000)
 
-// 👉 FIX 10: Graceful Shutdown WaitGroup
+//  FIX 10: Graceful Shutdown WaitGroup
 var wg sync.WaitGroup
 
-// 👉 FIX 11: Worker Pool Telemetry
+//  FIX 11: Worker Pool Telemetry
 var metricsProcessed atomic.Uint64
 var metricsDropped atomic.Uint64
 
 const dashboardCacheKey = "dashboard:active_incidents"
 
-// 👉 FIX 20: Circuit Breaker State Struct
+//  FIX 20: Circuit Breaker State Struct
 type CircuitBreaker struct {
 	failures int32
 	isOpen   atomic.Bool
@@ -46,12 +46,12 @@ type CircuitBreaker struct {
 func (cb *CircuitBreaker) RecordFailure() {
 	if atomic.AddInt32(&cb.failures, 1) >= 5 {
 		if cb.isOpen.CompareAndSwap(false, true) {
-			slog.Warn("🔴 CIRCUIT BREAKER TRIPPED! Database requests suspended for 30s.")
+			slog.Warn(" CIRCUIT BREAKER TRIPPED! Database requests suspended for 30s.")
 			go func() {
 				time.Sleep(30 * time.Second)
 				atomic.StoreInt32(&cb.failures, 0)
 				cb.isOpen.Store(false)
-				slog.Info("🟢 CIRCUIT BREAKER RESET. Resuming normal operations.")
+				slog.Info(" CIRCUIT BREAKER RESET. Resuming normal operations.")
 			}()
 		}
 	}
@@ -65,13 +65,13 @@ var pgCircuitBreaker CircuitBreaker
 var mongoCircuitBreaker CircuitBreaker
 
 func main() {
-	// 👉 FIX 12: Structured JSON Logging
+	//  FIX 12: Structured JSON Logging
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
 
-	// 👉 FIX 9: Environment Variables (Security)
+	//  FIX 9: Environment Variables (Security)
 	if err := godotenv.Load(); err != nil {
 		slog.Warn("No .env file found, relying on system environment variables")
 	}
@@ -80,7 +80,7 @@ func main() {
 	InitMongoDB()
 	InitRedis()
 
-	// 👉 FIX 18: Adaptive Worker Pool (Hardware Aware)
+	//  FIX 18: Adaptive Worker Pool (Hardware Aware)
 	workerCount := runtime.NumCPU() * 2
 	slog.Info("Initializing Worker Pool", "worker_count", workerCount, "cores", runtime.NumCPU())
 	for i := 1; i <= workerCount; i++ {
@@ -88,7 +88,7 @@ func main() {
 		go processSignals(i)
 	}
 
-	// 👉 FIX 28: Real-time Throughput Logger
+	//  FIX 28: Real-time Throughput Logger
 	// Fulfills the requirement to log signals/sec every 5 seconds.
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
@@ -106,7 +106,7 @@ func main() {
 	})
 	app.Use(cors.New())
 
-	// 👉 FIX 13: Realistic Rate Limiting
+	//  FIX 13: Realistic Rate Limiting
 	app.Use(limiter.New(limiter.Config{
 		Max:        1000, 
 		Expiration: 1 * time.Second,
@@ -119,21 +119,21 @@ func main() {
 	app.Post("/rca", submitRCA)
 	app.Post("/incidents/:id/close", closeIncident)
 	
-	// 👉 FIX 27: Explicit Health Endpoint (Required)
+	//  FIX 27: Explicit Health Endpoint (Required)
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
-	// 👉 FIX 29: Expose Raw Signals for the Frontend
+	//  FIX 29: Expose Raw Signals for the Frontend
 	app.Get("/incidents/:id/signals", getRawSignals)
 
-	// 👉 FIX 10: Graceful Shutdown OS Signal Listener
+	//  FIX 10: Graceful Shutdown OS Signal Listener
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
 		<-quit 
-		slog.Info("🛑 Gracefully shutting down...", 
+		slog.Info(" Gracefully shutting down...", 
 			"total_processed", metricsProcessed.Load(),
 			"total_dropped", metricsDropped.Load(),
 		)
@@ -142,14 +142,14 @@ func main() {
 		close(signalQueue)  
 	}()
 
-	slog.Info("🚀 IMS Backend started", "port", 3000)
+	slog.Info(" IMS Backend started", "port", 3000)
 	if err := app.Listen(":3000"); err != nil {
 		slog.Error("Server forced to shutdown", "error", err.Error())
 	}
 
-	slog.Info("⏳ Waiting for workers to drain the queue...")
+	slog.Info(" Waiting for workers to drain the queue...")
 	wg.Wait()
-	slog.Info("✅ All workers safely stopped. Zero data loss.")
+	slog.Info(" All workers safely stopped. Zero data loss.")
 }
 
 // ==========================================
@@ -157,7 +157,7 @@ func main() {
 // ==========================================
 
 func handleIngest(c *fiber.Ctx) error {
-	// 👉 FIX 17: API Idempotency (Duplicate Request Handling)
+	//  FIX 17: API Idempotency (Duplicate Request Handling)
 	idempotencyKey := c.Get("X-Idempotency-Key")
 	if idempotencyKey != "" {
 		exists, _ := redisClient.Exists(context.Background(), "idemp:"+idempotencyKey).Result()
@@ -173,7 +173,7 @@ func handleIngest(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid JSON payload"})
 	}
 
-	// 👉 FIX 15: Input Validation (Fail Fast)
+	//  FIX 15: Input Validation (Fail Fast)
 	if sig.ComponentID == "" || sig.ErrorType == "" || sig.Severity == "" {
 		slog.Warn("Rejected payload missing required fields", "component", sig.ComponentID)
 		return c.Status(400).JSON(fiber.Map{"error": "component_id, error_type, and severity are required fields"})
@@ -203,14 +203,14 @@ func processSignals(workerID int) {
 	for sig := range signalQueue {
 		cacheKey := fmt.Sprintf("debounce:%s:%s", sig.ComponentID, sig.ErrorType)
 		
-		// 👉 FIX 16: Prevent Redis Race Condition (Atomic SETNX)
+		//  FIX 16: Prevent Redis Race Condition (Atomic SETNX)
 		acquired, _ := redisClient.SetNX(ctx, cacheKey, "processing", 10*time.Second).Result()
 
 		if acquired {
 			// ==========================================
 			// SCENARIO A: FIRST SIGNAL (Atomic Win)
 			// ==========================================
-			// 👉 FIX 22: Parse the actual signal time for perfect MTTR tracking
+			//  FIX 22: Parse the actual signal time for perfect MTTR tracking
 			parsedTime, _ := time.Parse(time.RFC3339, sig.Timestamp)
 
 			workItem := WorkItem{
@@ -221,16 +221,16 @@ func processSignals(workerID int) {
 				FirstSignalTime: parsedTime, 
 			}
 
-			// 👉 FIX 20: Check Circuit Breaker before hitting DB
+			//  FIX 20: Check Circuit Breaker before hitting DB
 			if pgCircuitBreaker.isOpen.Load() {
 				slog.Error("Postgres Circuit Breaker OPEN: Dropping incident creation", "worker_id", workerID)
 				continue
 			}
 
-			// 👉 FIX 3: Database Retry Loop
+			//  FIX 3: Database Retry Loop
 			var pgErr error
 			for i := 0; i < 3; i++ {
-				// 👉 FIX 19: DB Call Timeouts (Prevent goroutine deadlocks)
+				//  FIX 19: DB Call Timeouts (Prevent goroutine deadlocks)
 				dbCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 				pgErr = db.WithContext(dbCtx).Create(&workItem).Error
 				cancel() 
@@ -243,19 +243,19 @@ func processSignals(workerID int) {
 				time.Sleep(100 * time.Millisecond) 
 			}
 
-			// 👉 FIX 4: Strict Error Handling
+			//  FIX 4: Strict Error Handling
 			if pgErr != nil {
 				pgCircuitBreaker.RecordFailure()
 				slog.Error("Failed to create WorkItem in Postgres", "worker_id", workerID, "error", pgErr.Error())
 				continue 
 			}
 
-			// 👉 FIX 2a: Relational Linking (Primary)
+			//  FIX 2a: Relational Linking (Primary)
 			sig.WorkItemID = workItem.ID
 
 			redisClient.Set(ctx, cacheKey, fmt.Sprintf("%d", workItem.ID), 10*time.Second)
 
-			// 👉 FIX 6: Strategy Pattern
+			// FIX 6: Strategy Pattern
 			HandleAlertStrategy(workItem)
 
 		} else {
@@ -265,14 +265,14 @@ func processSignals(workerID int) {
 			
 			existingWorkItemID, _ := redisClient.Get(ctx, cacheKey).Result()
 			
-			// 👉 FIX 26: Subtle Race Condition Mitigation
+			//  FIX 26: Subtle Race Condition Mitigation
 			if existingWorkItemID == "processing" {
 				time.Sleep(50 * time.Millisecond) // Give primary a fraction of a second to finish
 				existingWorkItemID, _ = redisClient.Get(ctx, cacheKey).Result()
 			}
 
 			if existingWorkItemID != "processing" && existingWorkItemID != "" {
-				// 👉 FIX 2b: Relational Linking (Debounced)
+				//  FIX 2b: Relational Linking (Debounced)
 				parsedID, _ := strconv.Atoi(existingWorkItemID)
 				sig.WorkItemID = uint(parsedID)
 			}
@@ -285,7 +285,7 @@ func processSignals(workerID int) {
 		} else {
 			var mongoErr error
 			for i := 0; i < 3; i++ {
-				// 👉 FIX 19: DB Call Timeouts for Mongo
+				//  FIX 19: DB Call Timeouts for Mongo
 				mongoCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 				_, mongoErr = mongoCol.InsertOne(mongoCtx, sig)
 				cancel()
@@ -298,7 +298,7 @@ func processSignals(workerID int) {
 				time.Sleep(100 * time.Millisecond)
 			}
 
-			// 👉 FIX 8: Dead Letter Queue (DLQ)
+			//  FIX 8: Dead Letter Queue (DLQ)
 			if mongoErr != nil {
 				mongoCircuitBreaker.RecordFailure()
 				slog.Error("MongoDB is down. Buffering to DLQ.", "worker_id", workerID, "error", mongoErr.Error())
@@ -325,11 +325,11 @@ func routeToDLQ(ctx context.Context, sig Signal, workerID int) {
 // FRONTEND API ROUTES (DASHBOARD)
 // ==========================================
 
-// 🔍 Endpoint: Fetch non-closed Incidents
+//  Endpoint: Fetch non-closed Incidents
 func getActiveIncidents(c *fiber.Ctx) error {
 	ctx := context.Background()
 
-	// 👉 FIX 14: Defensive Pagination
+	//  FIX 14: Defensive Pagination
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 50)
 	if limit > 100 {
@@ -337,7 +337,7 @@ func getActiveIncidents(c *fiber.Ctx) error {
 	}
 	offset := (page - 1) * limit
 
-	// 👉 FIX 7: Read-Through Dashboard Caching
+	//  FIX 7: Read-Through Dashboard Caching
 	cacheKey := fmt.Sprintf("dashboard:incidents:p%d:l%d", page, limit)
 
 	cachedData, err := redisClient.Get(ctx, cacheKey).Result()
@@ -359,7 +359,7 @@ func getActiveIncidents(c *fiber.Ctx) error {
 	return c.JSON(items)
 }
 
-// 📡 👉 FIX 29: Endpoint: Fetch Raw Signals from MongoDB for a specific Incident
+//  FIX 29: Endpoint: Fetch Raw Signals from MongoDB for a specific Incident
 func getRawSignals(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	workID, err := strconv.Atoi(idParam)
@@ -391,7 +391,7 @@ func getRawSignals(c *fiber.Ctx) error {
 	return c.JSON(signals)
 }
 
-// 🟡 Endpoint: Acknowledge Incident
+//  Endpoint: Acknowledge Incident
 func acknowledgeIncident(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var workItem WorkItem
@@ -400,7 +400,7 @@ func acknowledgeIncident(c *fiber.Ctx) error {
 		return c.Status(404).SendString("WorkItem not found")
 	}
 
-	// 👉 FIX 5: State Pattern Enforcement 
+	//  FIX 5: State Pattern Enforcement 
 	workItem.LoadState()
 	if err := workItem.State.Acknowledge(&workItem); err != nil {
 		slog.Warn("Illegal state transition attempted", "action", "acknowledge", "id", id)
@@ -412,7 +412,7 @@ func acknowledgeIncident(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "Incident moved to INVESTIGATING"})
 }
 
-// 🔵 Endpoint: Submit RCA
+//  Endpoint: Submit RCA
 func submitRCA(c *fiber.Ctx) error {
 	var rca RCA
 	if err := c.BodyParser(&rca); err != nil {
@@ -426,7 +426,7 @@ func submitRCA(c *fiber.Ctx) error {
 		return c.Status(404).SendString("WorkItem not found")
 	}
 
-	// 👉 FIX 5: State Pattern Enforcement 
+	//  FIX 5: State Pattern Enforcement 
 	workItem.LoadState()
 	if err := workItem.State.Resolve(&workItem); err != nil {
 		tx.Rollback()
@@ -449,7 +449,7 @@ func submitRCA(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "RCA logged, Incident RESOLVED"})
 }
 
-// 🟢 Endpoint: Close Incident
+//  Endpoint: Close Incident
 func closeIncident(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var workItem WorkItem
@@ -458,14 +458,14 @@ func closeIncident(c *fiber.Ctx) error {
 		return c.Status(404).SendString("WorkItem not found")
 	}
 
-	// 👉 FIX 5: State Pattern Enforcement 
+	//  FIX 5: State Pattern Enforcement 
 	workItem.LoadState()
 	if err := workItem.State.Close(&workItem); err != nil {
 		slog.Warn("Illegal state transition attempted", "action", "close", "id", id)
 		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	// 👉 FIX 22: Calculate MTTR using the FirstSignalTime, not DB creation time
+	//  FIX 22: Calculate MTTR using the FirstSignalTime, not DB creation time
 	resolvedTime := time.Now()
 	mttr := int64(resolvedTime.Sub(workItem.FirstSignalTime).Minutes())
 
