@@ -29,7 +29,7 @@ The primary goals of this system are:
 ##  3. System Overview
 The IMS system is built as a distributed, asynchronous, event-driven architecture.
 
-** High-Level Flow:**
+### High-Level Flow: 
 > Signals ➔ API ➔ In-Memory Queue ➔ Workers ➔ DBs ➔ Dashboard
 
 ---
@@ -46,7 +46,7 @@ The IMS system is built as a distributed, asynchronous, event-driven architectur
 | **Workflow Engine**                | Manages incident lifecycle               |
 | **UI Dashboard**                   | Displays incidents and allows RCA        |
 
-### 🧠 Architecture Diagram (Conceptual)
+###  Architecture Diagram (Conceptual)
 ```text
           +----------------------+
           |   Signal Producers   |
