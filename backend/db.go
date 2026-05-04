@@ -35,7 +35,7 @@ func InitPostgres() {
 		log.Fatal("[FATAL] Failed to connect to PostgreSQL: ", err)
 	}
 
-	log.Println("✅ Connected to PostgreSQL")
+	log.Println(" Connected to PostgreSQL")
 
 	err = db.AutoMigrate(&WorkItem{}, &RCA{})
 	if err != nil {
@@ -60,10 +60,10 @@ func InitMongoDB() {
 		log.Fatal("[FATAL] MongoDB ping failed: ", err)
 	}
 
-	log.Println("✅ Connected to MongoDB")
+	log.Println(" Connected to MongoDB")
 	mongoCol = client.Database("ims_db").Collection("signals")
 
-	// 👉 FIX 23: MongoDB Optimizations (Indexes & TTL)
+	//  FIX 23: MongoDB Optimizations (Indexes & TTL)
 	// 1. Compound index for fast timeline queries
 	// 2. TTL (Time-To-Live) set to 30 days (2592000 seconds) to prevent infinite disk growth
 	indexModel := mongo.IndexModel{
@@ -96,5 +96,5 @@ func InitRedis() {
 		log.Fatal("[FATAL] Failed to connect to Redis: ", err)
 	}
 
-	log.Println("✅ Connected to Redis")
+	log.Println(" Connected to Redis")
 }
