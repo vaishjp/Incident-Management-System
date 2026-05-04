@@ -190,27 +190,27 @@ MTTR = RCA Submission Time - First Signal Time
 ```
 ##  9. Challenges & Solutions
 
-*   ** Challenge 1: High Throughput Handling**
+*   **Challenge 1: High Throughput Handling**
     *   **Problem:** System overload during bursts.
     *   **Solution:** Buffered channels + async workers.
       
-*   ** Challenge 2: Database Bottleneck**
+*   **Challenge 2: Database Bottleneck**
     *   **Problem:** DB writes slowing down the API.
     *   **Solution:** Decoupled ingestion from persistence.
       
-*   ** Challenge 3: Alert Fatigue**
+*   **Challenge 3: Alert Fatigue**
     *   **Problem:** Duplicate alerts flooding the system.
     *   **Solution:** Redis-based debouncing.
       
-*   ** Challenge 4: Data Consistency**
+*   **Challenge 4: Data Consistency**
     *   **Problem:** State corruption during transitions.
     *   **Solution:** PostgreSQL ACID transactions.
       
-*   ** Challenge 5: UI Data Mismatch**
+*   **Challenge 5: UI Data Mismatch**
     *   **Problem:** Backend `snake_case` vs frontend `camelCase`.
     *   **Solution:** Correct field mapping.
       
-*   ** Challenge 6: Docker & Environment Issues**
+*   **Challenge 6: Docker & Environment Issues**
     *   **Problem:** DB auth + container conflicts.
     *   **Solution:** Clean container reset + proper `.env` configuration.
 
