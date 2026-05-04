@@ -2,7 +2,7 @@ package main
 
 import "errors"
 
-// ⚙️ The State Interface
+//  The State Interface
 type IncidentState interface {
 	Acknowledge(w *WorkItem) error
 	Resolve(w *WorkItem) error
@@ -10,7 +10,7 @@ type IncidentState interface {
 	Name() string
 }
 
-// 🔴 OPEN STATE
+//  OPEN STATE
 type OpenState struct{}
 func (s *OpenState) Acknowledge(w *WorkItem) error {
 	w.SetState(&InvestigatingState{})
@@ -20,7 +20,7 @@ func (s *OpenState) Resolve(w *WorkItem) error { return errors.New("cannot resol
 func (s *OpenState) Close(w *WorkItem) error   { return errors.New("cannot close: incident is still open") }
 func (s *OpenState) Name() string              { return "OPEN" }
 
-// 🟡 INVESTIGATING STATE
+//  INVESTIGATING STATE
 type InvestigatingState struct{}
 func (s *InvestigatingState) Acknowledge(w *WorkItem) error { return errors.New("already investigating") }
 func (s *InvestigatingState) Resolve(w *WorkItem) error {
@@ -30,7 +30,7 @@ func (s *InvestigatingState) Resolve(w *WorkItem) error {
 func (s *InvestigatingState) Close(w *WorkItem) error { return errors.New("cannot close: RCA must be submitted to resolve first") }
 func (s *InvestigatingState) Name() string            { return "INVESTIGATING" }
 
-// 🔵 RESOLVED STATE (RCA Submitted)
+//  RESOLVED STATE (RCA Submitted)
 type ResolvedState struct{}
 func (s *ResolvedState) Acknowledge(w *WorkItem) error { return errors.New("incident is already resolved") }
 func (s *ResolvedState) Resolve(w *WorkItem) error     { return errors.New("incident is already resolved") }
@@ -40,7 +40,7 @@ func (s *ResolvedState) Close(w *WorkItem) error {
 }
 func (s *ResolvedState) Name() string { return "RESOLVED" }
 
-// 🟢 CLOSED STATE (Terminal)
+//  CLOSED STATE (Terminal)
 type ClosedState struct{}
 func (s *ClosedState) Acknowledge(w *WorkItem) error { return errors.New("incident is closed") }
 func (s *ClosedState) Resolve(w *WorkItem) error     { return errors.New("incident is closed") }
