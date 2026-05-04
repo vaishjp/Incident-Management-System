@@ -27,10 +27,10 @@ The primary goals of this system are:
 ---
 
 ##  3. System Overview
-The IMS system is built as a distributed, asynchronous, event-driven architecture.
+This system is designed with real-world SRE principles such as fault isolation, backpressure handling, and observability to simulate production-grade incident management workflows.
 
 ### High-Level Flow: 
-> Signals ➔ API ➔ In-Memory Queue ➔ Workers ➔ DBs ➔ Dashboard
+ Signals ➔ API ➔ In-Memory Queue ➔ Workers ➔ DBs ➔ Dashboard
 
 ---
 
@@ -193,18 +193,23 @@ MTTR = RCA Submission Time - First Signal Time
 *   ** Challenge 1: High Throughput Handling**
     *   **Problem:** System overload during bursts.
     *   **Solution:** Buffered channels + async workers.
+      
 *   ** Challenge 2: Database Bottleneck**
     *   **Problem:** DB writes slowing down the API.
     *   **Solution:** Decoupled ingestion from persistence.
+      
 *   ** Challenge 3: Alert Fatigue**
     *   **Problem:** Duplicate alerts flooding the system.
     *   **Solution:** Redis-based debouncing.
+      
 *   ** Challenge 4: Data Consistency**
     *   **Problem:** State corruption during transitions.
     *   **Solution:** PostgreSQL ACID transactions.
+      
 *   ** Challenge 5: UI Data Mismatch**
     *   **Problem:** Backend `snake_case` vs frontend `camelCase`.
     *   **Solution:** Correct field mapping.
+      
 *   ** Challenge 6: Docker & Environment Issues**
     *   **Problem:** DB auth + container conflicts.
     *   **Solution:** Clean container reset + proper `.env` configuration.
@@ -272,20 +277,25 @@ GET /health
 - Node.js (for frontend)
 
 ### Step 1: Start services
+```bash
 docker-compose up -d
-
+```
 ### Step 2: Run backend
+```bash
 cd backend
 go run .
-
+```
 ### Step 3: Run frontend
+```bash
 cd frontend
 npm install
 npm run dev
-
+```
 ### Step 4: Access application
+
 Frontend: http://localhost:5173  
 Backend: http://localhost:3000
+
 
 ##  14. Repository Structure
 ```text
