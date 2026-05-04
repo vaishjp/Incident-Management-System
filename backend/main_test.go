@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// 👉 FIX 24: Unit Tests for RCA Validation & State Machine
+//  FIX 24: Unit Tests for RCA Validation & State Machine
 func setupTestApp() *fiber.App {
 	// Use in-memory SQLite for blazing fast isolated tests
 	db, _ = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
@@ -68,7 +68,7 @@ func TestSubmitRCA_InvalidState(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, _ := app.Test(req)
 
-	// 👉 Enforcing the State Pattern: Should block with 400 Bad Request
+	//  Enforcing the State Pattern: Should block with 400 Bad Request
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected 400 Bad Request for illegal state transition, got %d", resp.StatusCode)
 	}
