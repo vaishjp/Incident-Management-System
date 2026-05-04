@@ -1,4 +1,4 @@
-#  Incident Management System (IMS) — Engineering Report
+#  Incident Management System (IMS) 
 
 ##  1. Introduction
 Modern distributed systems operate at massive scale, where failures are inevitable rather than exceptional. Systems composed of APIs, databases, caches, and asynchronous queues continuously generate high volumes of signals such as errors, latency spikes, and resource exhaustion.
