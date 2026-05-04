@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-// ⚙️ 1. The Strategy Interface
+//  1. The Strategy Interface
 // Every alert channel MUST implement this method
 type AlertStrategy interface {
 	SendAlert(w WorkItem) error
 }
 
-// 🔴 2. Concrete Strategy: PagerDuty (For CRITICAL / P0 / P1)
+//  2. Concrete Strategy: PagerDuty (For CRITICAL / P0 / P1)
 type PagerDutyStrategy struct{}
 
 func (s *PagerDutyStrategy) SendAlert(w WorkItem) error {
@@ -21,7 +21,7 @@ func (s *PagerDutyStrategy) SendAlert(w WorkItem) error {
 	return nil
 }
 
-// 🟡 3. Concrete Strategy: Slack Webhook (For HIGH / P2)
+//  3. Concrete Strategy: Slack Webhook (For HIGH / P2)
 type SlackStrategy struct{}
 
 func (s *SlackStrategy) SendAlert(w WorkItem) error {
@@ -31,7 +31,7 @@ func (s *SlackStrategy) SendAlert(w WorkItem) error {
 	return nil
 }
 
-// 🔵 4. Concrete Strategy: Email SMTP (For LOW / P3 / INFO)
+//  4. Concrete Strategy: Email SMTP (For LOW / P3 / INFO)
 type EmailStrategy struct{}
 
 func (s *EmailStrategy) SendAlert(w WorkItem) error {
@@ -41,7 +41,7 @@ func (s *EmailStrategy) SendAlert(w WorkItem) error {
 	return nil
 }
 
-// 🏗️ 5. The Context (AlertManager)
+//  5. The Context (AlertManager)
 // The manager doesn't care HOW the alert is sent, it just delegates to the active strategy
 type AlertManager struct {
 	strategy AlertStrategy
@@ -59,7 +59,7 @@ func (m *AlertManager) ExecuteAlert(w WorkItem) error {
 	return m.strategy.SendAlert(w)
 }
 
-// 🚀 6. The Dispatcher (Called by main.go)
+//  6. The Dispatcher (Called by main.go)
 func HandleAlertStrategy(w WorkItem) {
 	manager := &AlertManager{}
 
