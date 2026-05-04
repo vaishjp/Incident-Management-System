@@ -308,7 +308,7 @@ Incident-Management-System/
 ```
 ##  Demo / Proof of Work
 
-Screenshots demonstrating:
+Screenshots and demo video demonstrating:
 - Incident dashboard
 - RCA workflow
 - Raw signal logs
