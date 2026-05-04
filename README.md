@@ -215,7 +215,7 @@ MTTR = RCA Submission Time - First Signal Time
     *   **Solution:** Clean container reset + proper `.env` configuration.
 
 ---
-## 🔌 Key API Endpoints
+##  Key API Endpoints
 
 GET /incidents  
 → Fetch all active incidents  
