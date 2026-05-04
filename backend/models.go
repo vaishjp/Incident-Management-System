@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// 🐘 PostgreSQL: Structured Transactional Data
+//  PostgreSQL: Structured Transactional Data
 type WorkItem struct {
 	gorm.Model
-	// 👉 FIX 21: Database Indexes for fast dashboard querying & timeline generation
+	//  FIX 21: Database Indexes for fast dashboard querying & timeline generation
 	ComponentID     string    `json:"component_id" gorm:"index"`
 	ErrorType       string    `json:"error_type"`
 	Severity        string    `json:"severity"`
@@ -17,7 +17,7 @@ type WorkItem struct {
 	RCAs            []RCA     `json:"rcas" gorm:"foreignKey:WorkItemID"`
 	ResolvedAt      time.Time `json:"resolved_at"`
 	
-	// 👉 FIX 22: Precise MTTR tracking based on the actual hardware signal, not DB creation time
+	//  FIX 22: Precise MTTR tracking based on the actual hardware signal, not DB creation time
 	FirstSignalTime time.Time `json:"first_signal_time" gorm:"index"`
 	MTTR            int64     `json:"mttr_minutes"`
 
@@ -33,7 +33,7 @@ type RCA struct {
 	SubmittedBy string `json:"submitted_by"`
 }
 
-// 🍃 MongoDB: Unstructured Audit Log Data
+//  MongoDB: Unstructured Audit Log Data
 type Signal struct {
 	ID          string `json:"id" bson:"_id,omitempty"`
 	ComponentID string `json:"component_id" bson:"component_id"`
